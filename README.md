@@ -36,9 +36,6 @@ The following permissions are required:
 - `--allow-env` in order to determine the location of Deno or user home.
 - `--allow-net` to fetch from remote addresses.
 
-If the program is run with `--allow-run`, the plugin will use the `deno` binary to resolve remote files. This allows the
-plugin to re-use the Deno module cache.
-
 ## License
 
 `esbuild-plugin-deno-remote-import` is licensed under the GPL3 License, see [LICENSE](./LICENSE) for more information.
