@@ -2,5 +2,8 @@
 .idea/
 .vscode/
 
+# example
+example/dist/
+
 # reports
 cov_profile/

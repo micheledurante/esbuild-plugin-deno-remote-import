@@ -185,8 +185,13 @@ export const denoRemoteImport = () => {
                 try {
                     const contents = await Deno.readTextFile(`${cache_filename}`);
                     const metadata = JSON.parse(await Deno.readTextFile(`${cache_filename_metadata}`));
+                    const headers = new Headers();
 
-                    if (isCacheStale(metadata.headers)) {
+                    Object.keys(metadata.headers).forEach((key) => {
+                        headers.append(key, metadata.headers[key]);
+                    });
+
+                    if (isCacheStale(headers)) {
                         await Deno.remove(cache_filename);
                         await Deno.remove(cache_filename_metadata);
                         throw new Error(`Stale cache ${cache_filename}`);
@@ -201,7 +206,7 @@ export const denoRemoteImport = () => {
 
                 async function httpGet(url) {
                     console.info(`Downloading: ${url}`);
-                    const headers = new Headers();
+                    let headers;
 
                     return await fetch(url).then((res) => {
                         if ([301, 302, 307].includes(res.status)) {
@@ -213,10 +218,7 @@ export const denoRemoteImport = () => {
                             throw new Error(res.status);
                         }
 
-                        for (const header of res.headers.entries()) {
-                            headers.set(header[0], header[1]);
-                        }
-
+                        headers = res.headers;
                         return res.text();
                     }).then((contents) => {
                         return [contents, headers];

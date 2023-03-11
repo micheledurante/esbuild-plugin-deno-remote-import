@@ -12,7 +12,8 @@
     "fmt": {
         "files": {
             "exclude": [
-                "./cov_profile/"
+                "./cov_profile/",
+                "./example/dist/"
             ]
         },
         "options": {
@@ -24,7 +25,8 @@
     "lint": {
         "files": {
             "exclude": [
-                "./cov_profile/"
+                "./cov_profile/",
+                "./example/dist/"
             ]
         }
     },
