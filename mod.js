@@ -1,6 +1,6 @@
-import { crypto } from "https://deno.land/std@0.177.0/crypto/crypto.ts";
-import { toHashString } from "https://deno.land/std@0.177.0/crypto/to_hash_string.ts";
-import { join } from "https://deno.land/std@0.179.0/path/mod.ts";
+import { crypto } from "./deps.ts";
+import { toHashString } from "./deps.ts";
+import { join } from "./deps.ts";
 
 const DENO_HOME_DIR = ".deno";
 const CACHE_DEPS = "deps";

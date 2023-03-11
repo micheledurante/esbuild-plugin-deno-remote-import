@@ -1,4 +1,4 @@
-import { assertEquals } from "https://deno.land/std@0.154.0/testing/asserts.ts";
+import { assertEquals } from "./deps.ts";
 import { default as mod } from "./mod.js";
 
 Deno.test("cache is stale when no Cache-Control header is present", async () => {

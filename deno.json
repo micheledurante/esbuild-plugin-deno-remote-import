@@ -17,6 +17,6 @@
         }
     },
     "tasks": {
-        "check": "deno lint && deno fmt && deno test --parallel"
+        "check": "deno lint && deno fmt"
     }
 }

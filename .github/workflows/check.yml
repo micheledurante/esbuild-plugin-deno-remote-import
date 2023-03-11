@@ -8,6 +8,14 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
+
+      - uses: actions/cache@v3
+        with:
+          path: |
+            ~/.deno
+            ~/.cache/deno
+          key: ${{ runner.os }}-deno-${{ hashFiles('**/deps.ts') }}
+
       - uses: denoland/setup-deno@v1
         with:
           deno-version: v1.x
@@ -16,6 +24,22 @@ jobs:
         run: |
           deno task check
 
-#  check-windows:
-#    runs-on: windows-latest
-#    steps:
+  check-windows:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - uses: actions/cache@v3
+        with:
+          path: |
+            ~\.deno
+            ~\AppData\Local\deno
+          key: ${{ runner.os }}-deno-${{ hashFiles('**/deps.ts') }}
+
+      - uses: denoland/setup-deno@v1
+        with:
+          deno-version: v1.x
+
+      - name: Check mod.js
+        run: |
+          deno task check
