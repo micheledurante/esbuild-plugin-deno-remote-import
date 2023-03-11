@@ -10,13 +10,25 @@
         ]
     },
     "fmt": {
+        "files": {
+            "exclude": [
+                "./cov_profile/"
+            ]
+        },
         "options": {
             "lineWidth": 120,
             "indentWidth": 4,
             "singleQuote": false
         }
     },
+    "lint": {
+        "files": {
+            "exclude": [
+                "./cov_profile/"
+            ]
+        }
+    },
     "tasks": {
-        "check": "deno lint && deno fmt"
+        "check": "deno lint && deno fmt && deno test --coverage=./cov_profile/ --allow-read --parallel"
     }
 }

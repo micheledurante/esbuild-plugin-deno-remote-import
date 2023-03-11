@@ -6,7 +6,7 @@ const DENO_HOME_DIR = ".deno";
 const CACHE_DEPS = "deps";
 
 // Write the content to the given filename
-const writeFile = async (filename, content) => {
+export const writeFile = async (filename, content) => {
     try {
         await Deno.writeTextFile(
             filename,
@@ -23,7 +23,7 @@ const writeFile = async (filename, content) => {
 
 // Turn the URL into a path for the cache file, as Deno creates them.
 // Ex: $DENO_DIR/deps/https/deno.land/
-const urlToFilename = async (url) => {
+export const urlToFilename = async (url) => {
     const out = [];
 
     if (url.protocol.slice(0, -1) === "http") { // protocol retains the ":"
@@ -50,7 +50,7 @@ const urlToFilename = async (url) => {
 };
 
 // Return the full path to this remote import dir inclusive of DENO_DIR path
-const getCacheFilename = (url_filename) => {
+export const getCacheFilename = (url_filename) => {
     // The actual deno installation directory is tricky to get right, easiest is to set your own "DENO_DIR" env.
     // @see https://github.com/denoland/deno/issues/2630
     let cache_root;
@@ -72,11 +72,11 @@ const getCacheFilename = (url_filename) => {
 
 // Compares date of retrieval with cache control directives.
 export function isCacheStale(headers) {
-    if (!headers["cache-control"]) {
+    if (!headers.has("cache-control")) {
         // No Cache-Control header found; assume cache is stale.
         return true;
     }
-    const directives = headers["cache-control"].split(",").map((d) => d.trim());
+    const directives = headers.get("cache-control").split(",").map((d) => d.trim());
     const max_age_directive = directives.find((d) => d.startsWith("max-age="));
 
     if (!max_age_directive) {
@@ -92,12 +92,12 @@ export function isCacheStale(headers) {
         return false;
     }
 
-    const cache_time = new Date(headers["date"]).getTime();
+    const cache_time = new Date(headers.get("date")).getTime();
     const now = new Date().getTime();
     const max_age_ms = max_age * 1000;
     const max_stale_directive = directives.find((d) => d.startsWith("max-stale="));
 
-    if (headers["max-stale"] && max_stale_directive) {
+    if (headers.has("max-stale") && max_stale_directive) {
         const max_stale = parseInt(max_stale_directive.substring(10));
         const max_stale_ms = max_stale * 1000;
         if (cache_time + max_age_ms + max_stale_ms >= now) {
@@ -106,8 +106,8 @@ export function isCacheStale(headers) {
         }
     }
 
-    if (headers["max-fresh"] && cache_time + max_age_ms >= now) {
-        const max_fresh = parseInt(headers["max-fresh"]);
+    if (headers.has("max-fresh") && cache_time + max_age_ms >= now) {
+        const max_fresh = parseInt(headers.get("max-fresh"));
         const max_fresh_ms = max_fresh * 1000;
         if (cache_time + max_fresh_ms >= now) {
             // Cache is fresh with max-fresh applied.
@@ -135,107 +135,106 @@ export function isCacheStale(headers) {
  *   - If module_name represents a local source, use the local file.
  * ```
  */
-export default {
-    name: "deno-remote-import",
+export const denoRemoteImport = () => {
+    return {
+        name: "deno-remote-import",
 
-    setup(build) {
-        // Tag `http` and `https` import paths with the "deno-remote-import" namespace to be handled by this plugin.
-        //
-        // interface OnResolveArgs {
-        //   path: string;
-        //   importer: string;
-        //   namespace: string;
-        //   resolveDir: string;
-        //   kind: ResolveKind;
-        //   pluginData: any;
-        // }
-        build.onResolve({ filter: /^(https?|http):\/\// }, (args) => ({
-            path: args.path,
-            namespace: "deno-remote-import",
-        }));
+        setup(build) {
+            // Tag `http` and `https` import paths with the "deno-remote-import" namespace to be handled by this plugin.
+            //
+            // interface OnResolveArgs {
+            //   path: string;
+            //   importer: string;
+            //   namespace: string;
+            //   resolveDir: string;
+            //   kind: ResolveKind;
+            //   pluginData: any;
+            // }
+            build.onResolve({ filter: /^(https?|http):\/\// }, (args) => ({
+                path: args.path,
+                namespace: "deno-remote-import",
+            }));
 
-        // Intercept all import paths inside downloaded files and resolve them against the original URL.
-        // Keep them in the same namespace to resolve them recursively.
-        build.onResolve({ filter: /.*/, namespace: "deno-remote-import" }, (args) => ({
-            path: new URL(args.path, args.importer).href,
-            namespace: "deno-remote-import",
-        }));
+            // Intercept all import paths inside downloaded files and resolve them against the original URL.
+            // Keep them in the same namespace to resolve them recursively.
+            build.onResolve({ filter: /.*/, namespace: "deno-remote-import" }, (args) => ({
+                path: new URL(args.path, args.importer).href,
+                namespace: "deno-remote-import",
+            }));
 
-        // Handle download of the resources.
-        //
-        // interface OnLoadArgs {
-        //   path: string;
-        //   namespace: string;
-        //   suffix: string;
-        //   pluginData: any;
-        // }
-        build.onLoad({ filter: /.*/, namespace: "deno-remote-import" }, async (args) => {
-            const url = new URL(args.path);
+            // Handle download of the resources.
+            //
+            // interface OnLoadArgs {
+            //   path: string;
+            //   namespace: string;
+            //   suffix: string;
+            //   pluginData: any;
+            // }
+            build.onLoad({ filter: /.*/, namespace: "deno-remote-import" }, async (args) => {
+                const url = new URL(args.path);
 
-            console.debug(`DEBUG --- Remote import ${args.path}`);
+                console.debug(`DEBUG --- Remote import ${args.path}`);
 
-            // @see https://github.com/denoland/deno/blob/v1.31.1/cli/cache/http_cache.rs
-            const url_filename = await urlToFilename(url);
-            const cache_filename = getCacheFilename(url_filename);
-            const cache_filename_metadata = `${cache_filename}.metadata.json`;
+                // @see https://github.com/denoland/deno/blob/v1.31.1/cli/cache/http_cache.rs
+                const url_filename = await urlToFilename(url);
+                const cache_filename = getCacheFilename(url_filename);
+                const cache_filename_metadata = `${cache_filename}.metadata.json`;
 
-            // try caches
+                // try caches
 
-            try {
-                const contents = await Deno.readTextFile(`${cache_filename}`);
-                const metadata = JSON.parse(await Deno.readTextFile(`${cache_filename_metadata}`));
+                try {
+                    const contents = await Deno.readTextFile(`${cache_filename}`);
+                    const metadata = JSON.parse(await Deno.readTextFile(`${cache_filename_metadata}`));
 
-                if (isCacheStale(metadata.headers)) {
-                    await Deno.remove(cache_filename);
-                    await Deno.remove(cache_filename_metadata);
-                    throw new Error(`Stale cache ${cache_filename}`);
+                    if (isCacheStale(metadata.headers)) {
+                        await Deno.remove(cache_filename);
+                        await Deno.remove(cache_filename_metadata);
+                        throw new Error(`Stale cache ${cache_filename}`);
+                    }
+
+                    console.info(`Cache HIT ${cache_filename}`);
+                    return { contents };
+                } catch (e) {
+                    console.debug(e.message);
+                    console.info(`Cache MISS ${cache_filename}`);
                 }
 
-                console.info(`Cache HIT ${cache_filename}`);
+                async function httpGet(url) {
+                    console.info(`Downloading: ${url}`);
+                    let headers;
+
+                    return await fetch(url).then((res) => {
+                        if ([301, 302, 307].includes(res.status)) {
+                            httpGet(new URL(res.headers.get("location"), url).toString());
+                            res.stop();
+                        }
+
+                        if (!res.ok) {
+                            throw new Error(res.status);
+                        }
+
+                        headers = res.headers;
+                        return res.text();
+                    }).then((contents) => {
+                        return [contents, headers];
+                    }).catch((err) => {
+                        new Error(`GET ${url} failed: status ${err}`);
+                    });
+                }
+
+                const [contents, headers] = await httpGet(url);
+
+                writeFile(cache_filename, contents).then();
+                writeFile(
+                    cache_filename_metadata,
+                    JSON.stringify({ headers: Object.fromEntries(headers), url: url.toString() }, null, 2),
+                ).then();
+
+                console.info(`Written out cache file: ${cache_filename}`);
+                console.info(`Written out cache file: ${cache_filename_metadata}`);
+
                 return { contents };
-            } catch (e) {
-                console.debug(e.message);
-                console.info(`Cache MISS ${cache_filename}`);
-            }
-
-            async function httpGet(url) {
-                console.info(`Downloading: ${url}`);
-                const headers = new Map();
-
-                return await fetch(url).then((res) => {
-                    if ([301, 302, 307].includes(res.status)) {
-                        httpGet(new URL(res.headers.get("location"), url).toString());
-                        res.stop();
-                    }
-
-                    if (!res.ok) {
-                        throw new Error(res.status);
-                    }
-
-                    for (const header of res.headers.entries()) {
-                        headers.set(header[0], header[1]);
-                    }
-
-                    return res.text();
-                }).then((contents) => {
-                    return [contents, headers];
-                }).catch((err) => {
-                    new Error(`GET ${url} failed: status ${err}`);
-                });
-            }
-
-            const [contents, headers] = await httpGet(url);
-
-            writeFile(cache_filename, contents).then();
-            writeFile(
-                cache_filename_metadata,
-                JSON.stringify({ headers: Object.fromEntries(headers), url: url.toString() }, null, 2),
-            ).then();
-
-            console.info(`Written out cache file: ${cache_filename}`);
-            console.info(`Written out cache file: ${cache_filename_metadata}`);
-
-            return { contents };
-        });
-    },
+            });
+        },
+    };
 };

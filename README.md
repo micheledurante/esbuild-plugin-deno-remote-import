@@ -7,10 +7,37 @@ but the application will run in a browser. It comes with the same caching approa
 remote URLs, proper handling of stale caches and HTTP redirects.
 
 Take care of setting up the value of `DENO_DIR`
-[as recommended](https://github.com/denoland/deno/issues/2630#issuecomment-510100688) to ensure consistency between the
-plugin's and Deno's cache locations, if you're interested.
+[as it is recommended](https://github.com/denoland/deno/issues/2630#issuecomment-510100688) to ensure consistency
+between the plugin's and Deno's cache locations, if you're interested.
 
 ## Usage
+
+```ts
+import { esbuild } from "https://deno.land/x/esbuild@v0.17.11/mod.js";
+import { denoRemoteImport } from "https://deno.land/x/esbuild_plugin_deno_remote_import";
+
+await esbuild.build({
+    plugins: [denoRemoteImport()],
+    bundle: true,
+    // etc...
+});
+
+esbuild.stop();
+```
+
+See the [example file](./example/remote_fetch.ts) and [tests](./mod.test.ts) for more details.
+
+## Permissions
+
+The following permissions are required:
+
+- `--allow-read` in order to read caches.
+- `--allow-write` in order to write caches.
+- `--allow-env` in order to determine the location of Deno or user home.
+- `--allow-net` to fetch from remote addresses.
+
+If the program is run with `--allow-run`, the plugin will use the `deno` binary to resolve remote files. This allows the
+plugin to re-use the Deno module cache.
 
 ## License
 
