@@ -201,7 +201,7 @@ export const denoRemoteImport = () => {
 
                 async function httpGet(url) {
                     console.info(`Downloading: ${url}`);
-                    let headers;
+                    const headers = new Headers();
 
                     return await fetch(url).then((res) => {
                         if ([301, 302, 307].includes(res.status)) {
@@ -213,7 +213,10 @@ export const denoRemoteImport = () => {
                             throw new Error(res.status);
                         }
 
-                        headers = res.headers;
+                        for (const header of res.headers.entries()) {
+                            headers.set(header[0], header[1]);
+                        }
+
                         return res.text();
                     }).then((contents) => {
                         return [contents, headers];
