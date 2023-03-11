@@ -1,5 +1,4 @@
 name: main-workflow
-description: Run checks on `mod.js` on GitHub runners
 
 on:
   push:
