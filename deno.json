@@ -1,0 +1,22 @@
+{
+    "compilerOptions": {
+        "noImplicitAny": false,
+        "noImplicitThis": true,
+        "noImplicitReturns": true,
+        "strictNullChecks": true,
+        "lib": [
+            "dom",
+            "deno.ns"
+        ]
+    },
+    "fmt": {
+        "options": {
+            "lineWidth": 120,
+            "indentWidth": 4,
+            "singleQuote": false
+        }
+    },
+    "tasks": {
+        "check": "deno lint && deno fmt && deno test --parallel"
+    }
+}

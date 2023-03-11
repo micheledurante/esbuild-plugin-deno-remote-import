@@ -1,0 +1,22 @@
+name: main-workflow
+description: Run checks on `mod.js` on GitHub runners
+
+on:
+  push:
+
+jobs:
+  check-unix:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: denoland/setup-deno@v1
+        with:
+          deno-version: v1.x
+
+      - name: Check mod.js
+        run: |
+          deno task check
+
+#  check-windows:
+#    runs-on: windows-latest
+#    steps:
