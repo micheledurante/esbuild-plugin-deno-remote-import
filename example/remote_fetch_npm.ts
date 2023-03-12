@@ -3,9 +3,9 @@ import denoRemoteImport from "npm:esbuild-plugin-deno-remote-import@0.2";
 
 await esbuild.build({
     plugins: [denoRemoteImport()],
-    entryPoints: ["https://esm.sh/navigo@8.11.1"],
-    outfile: "./dist/remote_fetch.js",
     bundle: true,
+    entryPoints: ["https://esm.sh/navigo@8.11.1"],
+    outfile: "./dist/remote_fetch_npm.js",
 });
 
 esbuild.stop();
