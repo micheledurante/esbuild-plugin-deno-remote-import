@@ -1,5 +1,5 @@
 import * as esbuild from "https://deno.land/x/esbuild@v0.17.11/mod.js";
-import { denoRemoteImport } from "https://deno.land/x/esbuild_plugin_deno_remote_import@v0.2.2/mod.js";
+import { denoRemoteImport } from "https://deno.land/x/esbuild_plugin_deno_remote_import@0.2.5/mod.js";
 
 await esbuild.build({
     plugins: [denoRemoteImport()],

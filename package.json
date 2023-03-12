@@ -1,13 +1,14 @@
 {
     "name": "esbuild-plugin-deno-remote-import",
-    "version": "0.2.4",
+    "version": "0.2.5",
     "description": "esbuild plugin to fetch remote imports for Deno",
     "repository": "https://github.com/micheledurante/esbuild-plugin-deno-remote-import.git",
     "homepage": "https://deno.land/x/esbuild_plugin_deno_remote_import",
     "bugs": "https://github.com/micheledurante/esbuild-plugin-deno-remote-import/issues",
     "author": "Michele Durante <github@micheledurante.com>",
     "license": "GPL3",
-    "main": "/.mod.js",
+    "type": "module",
+    "main": "./mod.js",
     "keywords": [
         "esbuild",
         "plugin",
