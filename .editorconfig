@@ -6,7 +6,7 @@ root = true
 # Matches multiple files with brace expansion notation
 # Set default charset
 [*.{yml,json,yaml}]
-indent_size = 2
+indent_size = 4
 indent_style = space
 charset = utf-8
 
